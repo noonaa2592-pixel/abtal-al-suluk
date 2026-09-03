@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>أبطال السلوك — تصميم نوال الجهني</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 :root{--bg:#eefaff;--card:#fff;--ink:#18324a;--muted:#70879a;--primary:#0db5b5;--gold:#f6b91a;--green:#37b96b;--red:#f15b67;--blue:#4d9de0;--shadow:0 10px 30px #173a4a18}
@@ -24,11 +25,26 @@ main{max-width:1450px;margin:auto;padding:20px}.hero{background:linear-gradient(
 @media(max-width:800px){.heroGrid{grid-template-columns:1fr}.hero h2{font-size:25px}.rank{grid-template-columns:1fr}.top{position:relative}main{padding:12px}}
 @media print{.top,nav,.toolbar,.actions,.noPrint{display:none!important}.panel,.hero,.student{box-shadow:none;border:1px solid #ccc}.student{break-inside:avoid}.footer{display:block}}
 </style>
-</head>
+<style>
+#cloudLogin{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#effcff,#f9fbff);display:flex;align-items:center;justify-content:center;padding:20px}
+.loginCard{width:min(430px,100%);background:#fff;border:1px solid #dcebf2;border-radius:28px;padding:30px;box-shadow:0 20px 60px #173a4a20;text-align:center}.loginCard h2{margin:0 0 8px}.loginCard p{color:#70879a;margin:0 0 22px}.loginCard input{width:100%;padding:13px;border:1px solid #d6e7ef;border-radius:14px;margin:6px 0;direction:ltr;text-align:left}.loginCard button{width:100%;margin-top:10px}.cloudStatus{font-size:12px;color:#70879a;margin-top:12px}.logoutBtn{font-size:12px;padding:6px 10px;border-radius:10px;background:#fff;border:1px solid #d6e7ef}
+</style></head>
 <body>
+<div id="cloudLogin">
+  <div class="loginCard">
+    <div style="font-size:54px">🦸‍♀️</div>
+    <h2>أبطال السلوك</h2>
+    <p>سجّلي الدخول لحفظ بياناتك ومزامنتها بين أجهزتك ☁️</p>
+    <input id="authEmail" type="email" placeholder="البريد الإلكتروني" autocomplete="email">
+    <input id="authPassword" type="password" placeholder="كلمة المرور" autocomplete="current-password">
+    <button class="btn prim" onclick="cloudSignIn()">دخول</button>
+    <button class="btn" onclick="cloudSignUp()">إنشاء حساب جديد</button>
+    <div id="authMsg" class="cloudStatus"></div>
+  </div>
+</div>
 <header class="top">
   <div class="toprow">
-    <div class="brand"><h1>🏆 أبطال السلوك</h1><div class="credit">✦ تصميم نوال الجهني ✦</div></div>
+    <div class="brand"><h1>🏆 أبطال السلوك</h1><div class="credit">✦ تصميم نوال الجهني ✦</div><div style="display:flex;gap:8px;align-items:center;margin-top:5px"><span id="cloudBadge" class="cloudStatus">☁️ غير متصل</span><button class="logoutBtn" onclick="cloudSignOut()">تسجيل الخروج</button></div></div>
     <div class="controls">
       <select id="classSelect" class="pill"></select>
       <select id="lessonSelect" class="pill"></select>
@@ -56,6 +72,10 @@ main{max-width:1450px;margin:auto;padding:20px}.hero{background:linear-gradient(
 
 <script>
 const KEY='behaviorHeroes_nawal_v2';
+const SUPABASE_URL='https://mwcwhowbocsfuwijrqfl.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13Y3dob3dib2NzZnV3aWpycWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNDYwOTcsImV4cCI6MjEwMzkyMjA5N30.jnAE73ebbekTZ6hWbJMeTvaTz9PgslXxTAMULJx2dGc';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+let cloudUser=null, cloudReady=false, cloudTimer=null;
 const emojis=['🦊','🐨','🐼','🐯','🦁','🐧','🦉','🐵','🐸','🐰','🐙','🐳'];
 let state=JSON.parse(localStorage.getItem(KEY)||'null')||{
   classes:[{id:id(),name:'الصف الأول أ',students:[]}],
@@ -69,11 +89,63 @@ let state=JSON.parse(localStorage.getItem(KEY)||'null')||{
 };
 state.currentClass ||= state.classes[0]?.id;
 state.currentLesson ||= state.lessons[0]?.id;
-save(); syncControls();
+// تُحفظ نسخة محلية دائمًا، أما السحابة فتبدأ بعد تسجيل الدخول
+localStorage.setItem(KEY,JSON.stringify(state));
 
 function id(){return Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4)}
 function today(){return new Date().toLocaleDateString('ar-SA')}
-function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function save(){
+ localStorage.setItem(KEY,JSON.stringify(state));
+ if(cloudReady && cloudUser){
+   clearTimeout(cloudTimer);
+   cloudTimer=setTimeout(saveCloud,350);
+ }
+}
+async function saveCloud(){
+ if(!cloudReady||!cloudUser)return;
+ const {error}=await sb.from('app_state').upsert({user_id:cloudUser.id,data:state,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+ if(error) setAuthMsg('⚠️ تعذر الحفظ السحابي: '+error.message);
+ else updateCloudBadge('☁️ تمت المزامنة');
+}
+function updateCloudBadge(t){const e=document.getElementById('cloudBadge');if(e)e.textContent=t}
+function setAuthMsg(t){const e=document.getElementById('authMsg');if(e)e.textContent=t}
+async function cloudSignUp(){
+ const email=document.getElementById('authEmail').value.trim(), password=document.getElementById('authPassword').value;
+ if(!email||password.length<6){setAuthMsg('اكتبي البريد وكلمة مرور من 6 أحرف على الأقل');return}
+ setAuthMsg('جارٍ إنشاء الحساب...');
+ const {error}=await sb.auth.signUp({email,password});
+ if(error)setAuthMsg('❌ '+error.message);else setAuthMsg('✅ تم إنشاء الحساب. إذا طلب التأكيد، افتحي رسالة البريد ثم سجّلي الدخول.');
+}
+async function cloudSignIn(){
+ const email=document.getElementById('authEmail').value.trim(), password=document.getElementById('authPassword').value;
+ if(!email||!password){setAuthMsg('أدخلي البريد وكلمة المرور');return}
+ setAuthMsg('جارٍ تسجيل الدخول...');
+ const {data,error}=await sb.auth.signInWithPassword({email,password});
+ if(error){setAuthMsg('❌ '+error.message);return}
+ await startCloudSession(data.user);
+}
+async function startCloudSession(user){
+ cloudUser=user; setAuthMsg('جارٍ تحميل بياناتك...');
+ const {data,error}=await sb.from('app_state').select('data').eq('user_id',user.id).maybeSingle();
+ if(error){setAuthMsg('❌ تعذر الوصول إلى البيانات: '+error.message);return}
+ if(data?.data){
+   state=data.data;
+   state.currentClass ||= state.classes?.[0]?.id; state.currentLesson ||= state.lessons?.[0]?.id;
+   localStorage.setItem(KEY,JSON.stringify(state));
+ } else {
+   await saveCloud();
+ }
+ cloudReady=true;
+ document.getElementById('cloudLogin').style.display='none';
+ syncControls(); render();
+ updateCloudBadge('☁️ متصل');
+}
+async function cloudSignOut(){await sb.auth.signOut();location.reload()}
+async function initCloud(){
+ const {data}=await sb.auth.getSession();
+ if(data.session) await startCloudSession(data.session.user);
+}
+sb.auth.onAuthStateChange((_event,session)=>{ if(session&&!cloudReady) startCloudSession(session.user); });
 function cls(){return state.classes.find(x=>x.id===state.currentClass)}
 function lesson(){return state.lessons.find(x=>x.id===state.currentLesson)}
 function studentData(s){s.evals ||= {}; s.stars ||= 0; s.avatar ||= emojis[Math.floor(Math.random()*emojis.length)]; return s}
@@ -246,7 +318,7 @@ function beep(kind){
 function toggleSound(){state.sound=!state.sound;save();toast(state.sound?'🔊 تم تشغيل الأصوات':'🔇 تم كتم الأصوات')}
 function confetti(...items){let c=document.getElementById('celebrate');c.innerHTML='';c.classList.add('show');for(let i=0;i<28;i++){let s=document.createElement('span');s.className='conf';s.textContent=items[i%items.length];s.style.left=Math.random()*100+'%';s.style.animationDelay=(Math.random()*.5)+'s';c.appendChild(s)}setTimeout(()=>c.classList.remove('show'),1800)}
 window.addEventListener('beforeunload',save);
-render();
+initCloud();
 </script>
 </body>
 </html>
