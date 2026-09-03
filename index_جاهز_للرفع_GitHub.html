@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>أبطال السلوك — تصميم نوال الجهني</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#eefaff;--card:#fff;--ink:#18324a;--muted:#70879a;--primary:#0db5b5;--gold:#f6b91a;--green:#37b96b;--red:#f15b67;--blue:#4d9de0;--shadow:0 10px 30px #173a4a18}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#effcff,#f9fbff);font-family:"Tahoma","Arial",sans-serif;color:var(--ink)}
+button,input,select{font:inherit}button{border:0;cursor:pointer}
+.top{position:sticky;top:0;z-index:20;background:#ffffffee;backdrop-filter:blur(12px);border-bottom:1px solid #dcebf2;padding:12px 20px}
+.toprow{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.brand h1{margin:0;font-size:25px}.credit{color:#8a6a2a;font-weight:800;font-size:13px;margin-top:4px}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.pill, .btn{border:1px solid #d6e7ef;background:#fff;border-radius:15px;padding:9px 13px;color:var(--ink);font-weight:800}.btn.primary{background:var(--primary);color:white;border-color:var(--primary)}.btn.gold{background:#fff5d1;border-color:#f7d879}.btn.danger{background:#fff0f1;border-color:#ffc7cb;color:#c63b46}.btn:active{transform:translateY(1px)}
+nav{display:flex;gap:7px;overflow:auto;padding-top:10px}.navbtn{padding:10px 13px;border-radius:13px;background:#f5fbfd;color:#46677d;font-weight:800;white-space:nowrap}.navbtn.active{background:#dff9f7;color:#008e8c}
+main{max-width:1450px;margin:auto;padding:20px}.hero{background:linear-gradient(120deg,#dffaf8,#f4f8ff);border:1px solid #cfecef;border-radius:30px;padding:22px;box-shadow:var(--shadow);margin-bottom:18px}.heroGrid{display:grid;grid-template-columns:1fr 2fr;gap:20px;align-items:center}.hero h2{font-size:32px;margin:0 0 8px}.stats{display:flex;gap:10px;flex-wrap:wrap}.stat{background:#fff;border-radius:18px;padding:12px 18px;min-width:115px;text-align:center;box-shadow:0 4px 15px #173a4a0c}.stat b{font-size:23px;display:block}.progress{height:18px;background:#dceff6;border-radius:999px;overflow:hidden}.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#19b5b0,#79d9a0);transition:width .5s}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:15px}.student{background:#fff;border:1px solid #dbeaf0;border-radius:25px;padding:16px;box-shadow:var(--shadow);position:relative;overflow:hidden}.avatar{width:76px;height:76px;border-radius:50%;background:#def7fb;display:grid;place-items:center;font-size:48px;margin:auto}.name{text-align:center;font-size:20px;font-weight:900;margin-top:8px}.level{text-align:center;color:var(--muted);font-size:13px}.badgeRow{display:flex;justify-content:center;gap:6px;margin:8px 0}.badge{background:#fff4ce;border-radius:999px;padding:5px 10px;font-weight:900}.meter{height:8px;background:#e8f1f5;border-radius:99px;overflow:hidden;margin:10px 0}.meter i{display:block;height:100%;background:#0db5b5;width:0}.actions{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:7px}.face{padding:10px 5px;border-radius:13px;font-size:14px;font-weight:900}.good{background:#e7f9ed;color:#17713d}.bad{background:#ffeaec;color:#bf3543}.star{background:#fff3cf;color:#9a6a00}.history{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;min-height:25px}.mini{font-size:18px}.panel{background:#fff;border:1px solid #dcebf2;border-radius:22px;padding:18px;box-shadow:var(--shadow);margin-bottom:15px}.panel h3{margin-top:0}.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}.toolbar input,.toolbar select{border:1px solid #d5e5ec;border-radius:12px;padding:10px;background:#fff;min-width:150px}
+.tableWrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:720px}.table th,.table td{padding:10px;border-bottom:1px solid #edf2f5;text-align:right}.table th{background:#f5fbfd}
+.modal{position:fixed;inset:0;background:#18324a66;display:none;align-items:center;justify-content:center;z-index:50;padding:20px}.modal.show{display:flex}.modalbox{background:white;border-radius:25px;max-width:720px;width:100%;max-height:90vh;overflow:auto;padding:22px}.modalbox h3{margin-top:0}.field{display:grid;gap:6px;margin:10px 0}.field input,.field select{padding:11px;border:1px solid #d5e5ec;border-radius:12px}
+.toast{position:fixed;left:20px;bottom:20px;background:#18324a;color:white;padding:12px 16px;border-radius:14px;box-shadow:var(--shadow);display:none;z-index:100}.toast.show{display:block;animation:pop .2s ease}
+.celebrate{position:fixed;inset:0;pointer-events:none;display:none;z-index:80}.celebrate.show{display:block}.conf{position:absolute;font-size:32px;animation:fall 1.5s ease-out forwards}
+@keyframes fall{from{transform:translateY(-20vh) rotate(0);opacity:1}to{transform:translateY(110vh) rotate(600deg);opacity:0}}@keyframes pop{from{transform:scale(.9);opacity:.4}to{transform:scale(1);opacity:1}}
+.empty{text-align:center;padding:35px;color:var(--muted)}.muted{color:var(--muted)}.rank{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.rankCard{padding:18px;border-radius:22px;background:linear-gradient(180deg,#fff,#f4fbfd);text-align:center;border:1px solid #deedf3}.rankCard .big{font-size:42px}.switch{display:flex;align-items:center;gap:8px}.small{font-size:12px}.footer{text-align:center;color:#8a9cab;padding:20px}
+@media(max-width:800px){.heroGrid{grid-template-columns:1fr}.hero h2{font-size:25px}.rank{grid-template-columns:1fr}.top{position:relative}main{padding:12px}}
+@media print{.top,nav,.toolbar,.actions,.noPrint{display:none!important}.panel,.hero,.student{box-shadow:none;border:1px solid #ccc}.student{break-inside:avoid}.footer{display:block}}
+</style>
+<style>
+#cloudLogin{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#effcff,#f9fbff);display:flex;align-items:center;justify-content:center;padding:20px}
+.loginCard{width:min(430px,100%);background:#fff;border:1px solid #dcebf2;border-radius:28px;padding:30px;box-shadow:0 20px 60px #173a4a20;text-align:center}.loginCard h2{margin:0 0 8px}.loginCard p{color:#70879a;margin:0 0 22px}.loginCard input{width:100%;padding:13px;border:1px solid #d6e7ef;border-radius:14px;margin:6px 0;direction:ltr;text-align:left}.loginCard button{width:100%;margin-top:10px}.cloudStatus{font-size:12px;color:#70879a;margin-top:12px}.logoutBtn{font-size:12px;padding:6px 10px;border-radius:10px;background:#fff;border:1px solid #d6e7ef}
+</style></head>
+<body>
+<div id="cloudLogin">
+  <div class="loginCard">
+    <div style="font-size:54px">🦸‍♀️</div>
+    <h2>أبطال السلوك</h2>
+    <p>سجّلي الدخول لحفظ بياناتك ومزامنتها بين أجهزتك ☁️</p>
+    <input id="authEmail" type="email" placeholder="البريد الإلكتروني" autocomplete="email">
+    <input id="authPassword" type="password" placeholder="كلمة المرور" autocomplete="current-password">
+    <button class="btn prim" onclick="cloudSignIn()">دخول</button>
+    <button class="btn" onclick="cloudSignUp()">إنشاء حساب جديد</button>
+    <div id="authMsg" class="cloudStatus"></div>
+  </div>
+</div>
+<header class="top">
+  <div class="toprow">
+    <div class="brand"><h1>🏆 أبطال السلوك</h1><div class="credit">✦ تصميم نوال الجهني ✦</div><div style="display:flex;gap:8px;align-items:center;margin-top:5px"><span id="cloudBadge" class="cloudStatus">☁️ غير متصل</span><button class="logoutBtn" onclick="cloudSignOut()">تسجيل الخروج</button></div></div>
+    <div class="controls">
+      <select id="classSelect" class="pill"></select>
+      <select id="lessonSelect" class="pill"></select>
+      <button class="btn" onclick="openModal('lesson')">＋ حصة</button>
+      <button class="btn" onclick="toggleSound()">🔊 الصوت</button>
+      <button class="btn primary" onclick="showScreen('students')">🖥️ شاشة الفصل</button>
+    </div>
+  </div>
+  <nav>
+    <button class="navbtn active" data-screen="students" onclick="showScreen('students')">🏠 الرئيسية</button>
+    <button class="navbtn" data-screen="manage" onclick="showScreen('manage')">👩‍🏫 الفصول والطلاب</button>
+    <button class="navbtn" data-screen="honor" onclick="showScreen('honor')">🏆 لوحة الشرف</button>
+    <button class="navbtn" data-screen="prizes" onclick="showScreen('prizes')">🎁 الجوائز</button>
+    <button class="navbtn" data-screen="reports" onclick="showScreen('reports')">📊 التقارير</button>
+    <button class="navbtn" data-screen="backup" onclick="showScreen('backup')">💾 النقل والنسخ</button>
+  </nav>
+</header>
+
+<main id="app"></main>
+<div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div id="modalbox" class="modalbox"></div></div>
+<div id="toast" class="toast"></div>
+<div id="celebrate" class="celebrate"></div>
+<input id="fileInput" type="file" accept=".xlsx,.xls,.csv" hidden>
+<input id="backupInput" type="file" accept=".json" hidden>
+
+<script>
+const KEY='behaviorHeroes_nawal_v2';
+const SUPABASE_URL='https://mwcwhowbocsfuwijrqfl.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13Y3dob3dib2NzZnV3aWpycWZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNDYwOTcsImV4cCI6MjEwMzkyMjA5N30.jnAE73ebbekTZ6hWbJMeTvaTz9PgslXxTAMULJx2dGc';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+let cloudUser=null, cloudReady=false, cloudTimer=null;
+const emojis=['🦊','🐨','🐼','🐯','🦁','🐧','🦉','🐵','🐸','🐰','🐙','🐳'];
+let state=JSON.parse(localStorage.getItem(KEY)||'null')||{
+  classes:[{id:id(),name:'الصف الأول أ',students:[]}],
+  lessons:[{id:id(),name:'الحصة 1',date:today()}],
+  currentClass:null,currentLesson:null,sound:true,
+  prizes:[
+    {id:id(),name:'نجم اليوم',need:5,icon:'⭐'},
+    {id:id(),name:'بطل السلوك',need:10,icon:'🏆'},
+    {id:id(),name:'سفير السلوك الجميل',need:20,icon:'👑'}
+  ]
+};
+state.currentClass ||= state.classes[0]?.id;
+state.currentLesson ||= state.lessons[0]?.id;
+// تُحفظ نسخة محلية دائمًا، أما السحابة فتبدأ بعد تسجيل الدخول
+localStorage.setItem(KEY,JSON.stringify(state));
+
+function id(){return Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4)}
+function today(){return new Date().toLocaleDateString('ar-SA')}
+function save(){
+ localStorage.setItem(KEY,JSON.stringify(state));
+ if(cloudReady && cloudUser){
+   clearTimeout(cloudTimer);
+   cloudTimer=setTimeout(saveCloud,350);
+ }
+}
+async function saveCloud(){
+ if(!cloudReady||!cloudUser)return;
+ const {error}=await sb.from('app_state').upsert({user_id:cloudUser.id,data:state,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+ if(error) setAuthMsg('⚠️ تعذر الحفظ السحابي: '+error.message);
+ else updateCloudBadge('☁️ تمت المزامنة');
+}
+function updateCloudBadge(t){const e=document.getElementById('cloudBadge');if(e)e.textContent=t}
+function setAuthMsg(t){const e=document.getElementById('authMsg');if(e)e.textContent=t}
+async function cloudSignUp(){
+ const email=document.getElementById('authEmail').value.trim(), password=document.getElementById('authPassword').value;
+ if(!email||password.length<6){setAuthMsg('اكتبي البريد وكلمة مرور من 6 أحرف على الأقل');return}
+ setAuthMsg('جارٍ إنشاء الحساب...');
+ const {error}=await sb.auth.signUp({email,password});
+ if(error)setAuthMsg('❌ '+error.message);else setAuthMsg('✅ تم إنشاء الحساب. إذا طلب التأكيد، افتحي رسالة البريد ثم سجّلي الدخول.');
+}
+async function cloudSignIn(){
+ const email=document.getElementById('authEmail').value.trim(), password=document.getElementById('authPassword').value;
+ if(!email||!password){setAuthMsg('أدخلي البريد وكلمة المرور');return}
+ setAuthMsg('جارٍ تسجيل الدخول...');
+ const {data,error}=await sb.auth.signInWithPassword({email,password});
+ if(error){setAuthMsg('❌ '+error.message);return}
+ await startCloudSession(data.user);
+}
+async function startCloudSession(user){
+ cloudUser=user; setAuthMsg('جارٍ تحميل بياناتك...');
+ const {data,error}=await sb.from('app_state').select('data').eq('user_id',user.id).maybeSingle();
+ if(error){setAuthMsg('❌ تعذر الوصول إلى البيانات: '+error.message);return}
+ if(data?.data){
+   state=data.data;
+   state.currentClass ||= state.classes?.[0]?.id; state.currentLesson ||= state.lessons?.[0]?.id;
+   localStorage.setItem(KEY,JSON.stringify(state));
+ } else {
+   await saveCloud();
+ }
+ cloudReady=true;
+ document.getElementById('cloudLogin').style.display='none';
+ syncControls(); render();
+ updateCloudBadge('☁️ متصل');
+}
+async function cloudSignOut(){await sb.auth.signOut();location.reload()}
+async function initCloud(){
+ const {data}=await sb.auth.getSession();
+ if(data.session) await startCloudSession(data.session.user);
+}
+sb.auth.onAuthStateChange((_event,session)=>{ if(session&&!cloudReady) startCloudSession(session.user); });
+function cls(){return state.classes.find(x=>x.id===state.currentClass)}
+function lesson(){return state.lessons.find(x=>x.id===state.currentLesson)}
+function studentData(s){s.evals ||= {}; s.stars ||= 0; s.avatar ||= emojis[Math.floor(Math.random()*emojis.length)]; return s}
+function evalKey(){return state.currentLesson}
+function toast(t){let e=document.getElementById('toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200)}
+function syncControls(){
+ const cs=document.getElementById('classSelect'),ls=document.getElementById('lessonSelect');
+ cs.innerHTML=state.classes.map(c=>`<option value="${c.id}" ${c.id===state.currentClass?'selected':''}>${esc(c.name)}</option>`).join('');
+ ls.innerHTML=state.lessons.map(l=>`<option value="${l.id}" ${l.id===state.currentLesson?'selected':''}>${esc(l.name)}</option>`).join('');
+ cs.onchange=()=>{state.currentClass=cs.value;save();render()};
+ ls.onchange=()=>{state.currentLesson=ls.value;save();render()};
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function showScreen(screen){
+ document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.screen===screen));
+ render(screen)
+}
+function render(screen='students'){
+ syncControls();
+ if(screen==='students') renderStudents();
+ if(screen==='manage') renderManage();
+ if(screen==='honor') renderHonor();
+ if(screen==='prizes') renderPrizes();
+ if(screen==='reports') renderReports();
+ if(screen==='backup') renderBackup();
+}
+function progress(){
+ let c=cls(), total=c?.students.length||0;
+ if(!total)return 0;
+ let points=c.students.reduce((a,s)=>a+(s.stars||0),0);
+ return Math.min(100,Math.round(points/(total*10)*100));
+}
+function renderStudents(){
+ let c=cls(), l=lesson(), ps=c?.students||[];
+ const good=ps.filter(s=>s.evals?.[l?.id]?.type==='good').length;
+ const bad=ps.filter(s=>s.evals?.[l?.id]?.type==='bad').length;
+ const stars=ps.reduce((a,s)=>a+(s.stars||0),0);
+ document.getElementById('app').innerHTML=`
+ <section class="hero"><div class="heroGrid">
+   <div><div class="muted">الفصل الحالي</div><h2>${esc(c?.name||'لا يوجد فصل')}</h2><div class="muted">${esc(l?.name||'')} • ${esc(l?.date||'')}</div></div>
+   <div><div class="stats">
+      <div class="stat"><b>${ps.length}</b>👥 الطلاب<div class="small muted">ثابت لكل الحصص</div></div>
+      <div class="stat"><b>${good}</b>😊 إيجابي<div class="small muted">هذه الحصة</div></div>
+      <div class="stat"><b>${stars}</b>⭐ النجوم<div class="small muted">إجمالي الفصل</div></div>
+      <div class="stat"><b>${bad}</b>😠 تنبيه<div class="small muted">هذه الحصة</div></div>
+    </div>
+   <div style="margin-top:14px"><div style="display:flex;justify-content:space-between;font-weight:900;margin-bottom:6px"><span>🌟 رحلة أبطال الفصل</span><span>${progress()}%</span></div><div class="progress"><i style="width:${progress()}%"></i></div></div>
+   <div class="panel" style="margin:14px 0 0;padding:12px;background:#ffffffaa">
+     <div style="font-weight:900;margin-bottom:6px">📖 سجل الحصص — محفوظ ولا يتغير عند الانتقال</div>
+     <div style="display:flex;gap:6px;flex-wrap:wrap">${state.lessons.map(ll=>{
+       const g=ps.filter(ss=>ss.evals?.[ll.id]?.type==='good').length;
+       const b=ps.filter(ss=>ss.evals?.[ll.id]?.type==='bad').length;
+       return `<span class="badge" style="${ll.id===state.currentLesson?'outline:2px solid #0db5b5;':''}">${esc(ll.name)}: 😊 ${g} • 😠 ${b}</span>`;
+     }).join('')}</div>
+   </div>
+ </div>
+ </div></section>
+ <div class="panel noPrint"><div style="font-weight:900;margin-bottom:8px">🎯 تقييم الحصة الحالية: <span style="color:#0b9f9d">${esc(l?.name||"")}</span></div><div class="toolbar"><input id="search" placeholder="🔎 ابحثي عن طالب"><button class="btn" onclick="openModal('student')">＋ إضافة طالب</button><button class="btn gold" onclick="addStarsToAll()">⭐ نجمة للجميع</button></div></div>
+ <div id="studentGrid" class="grid">${ps.length?ps.map(studentCard).join(''):`<div class="empty" style="grid-column:1/-1">أضيفي الطلاب للبدء 🎮</div>`}</div>
+ <div class="footer">أبطال السلوك • ✦ تصميم نوال الجهني ✦</div>`;
+ document.getElementById('search').oninput=e=>filterStudents(e.target.value);
+}
+function filterStudents(q){document.querySelectorAll('.student').forEach(x=>x.style.display=x.dataset.name.includes(q.trim())?'':'none')}
+function studentCard(s){
+ studentData(s);let e=s.evals?.[evalKey()]||{type:'neutral'}, level=getLevel(s.stars||0), pct=Math.min(100,((s.stars||0)%10)*10);
+ return `<article class="student" data-name="${esc(s.name)}">
+   <div class="avatar">${s.avatar}</div><div class="name">${esc(s.name)}</div><div class="level">${level}</div>
+   <div class="badgeRow"><span class="badge">⭐ ${s.stars||0}</span></div>
+   <div class="meter"><i style="width:${pct}%"></i></div>
+   <div class="actions">
+    <button class="face bad" onclick="rate('${s.id}','bad')">😠 تنبيه</button>
+    <button class="face star" onclick="giveStar('${s.id}')">⭐ نجمة</button>
+    <button class="btn good" onclick="rateGood('${s.id}')">😊 رائع +⭐</button>
+   </div>
+   <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px"><span>تقييم الحصة: ${e.type==='good'?'😊 إيجابي':e.type==='bad'?'😠 يحتاج تذكير':'🙂 لم يُقيّم'}</span><button class="btn" style="padding:5px 8px" onclick="editStudent('${s.id}')">تعديل</button></div>
+   <div class="history">${historyIcons(s)}</div>
+ </article>`
+}
+function historyIcons(s){
+ return state.lessons.map(l=>{let e=s.evals?.[l.id];return `<span class="mini" title="${esc(l.name)}">${e?.type==='good'?'😊':e?.type==='bad'?'😠':'🙂'}</span>`}).join('')
+}
+function getLevel(n){if(n>=50)return'👑 بطل السلوك';if(n>=30)return'🏅 بطل';if(n>=20)return'🌟 نجم';if(n>=10)return'⭐ متقدم';return'🌱 مبتدئ'}
+function rate(sid,type){
+ let s=cls().students.find(x=>x.id===sid);studentData(s);s.evals[evalKey()]={type,at:new Date().toISOString()};
+ save(); beep(type==='good'?'good':'bad'); if(type==='good')toast('👏 أحسنت! سلوك رائع');else toast('🔔 تم تسجيل تنبيه خفيف'); renderStudents();checkGroup();
+}
+function rateGood(sid){
+ let s=cls().students.find(x=>x.id===sid);if(!s)return;
+ studentData(s);
+ let l=lesson(),prev=s.evals?.[l.id]?.type;
+ rate(sid,'good');
+ if(prev==='good'){toast('تم تسجيل السلوك الرائع مسبقًا في هذا الدرس ⭐');return}
+ s.stars=(s.stars||0)+1;
+ save();beep('star');toast(`🌟 رائع! أضيفت نجمة لـ ${s.name}`);confetti('⭐','🌟','✨');checkPrize(s);renderStudents();
+}
+function giveStar(sid){
+ let s=cls().students.find(x=>x.id===sid);studentData(s);s.stars=(s.stars||0)+1;
+ save();beep('star');toast(`⭐ أضيفت نجمة لـ ${s.name}`);confetti('⭐','🌟','✨');renderStudents();checkPrize(s);
+}
+function addStarsToAll(){cls().students.forEach(s=>{studentData(s);s.stars=(s.stars||0)+1});save();beep('star');toast('⭐ أضيفت نجمة لكل أبطال الفصل');renderStudents();checkGroup()}
+function checkGroup(){if(progress()>=100){beep('win');toast('🎉 أكمل الفصل الهدف الجماعي!');confetti('🎉','🏆','⭐','✨')}}
+function checkPrize(s){
+ state.prizes.forEach(p=>{if((s.stars||0)>=p.need && !(s.awards||[]).includes(p.id)){s.awards ||= [];s.awards.push(p.id);save();beep('win');toast(`🏆 ${s.name} حصل على ${p.name}`);confetti('🏆','🎁','⭐')}})
+}
+function editStudent(sid){
+ let s=cls().students.find(x=>x.id===sid);
+ openModalHTML(`<h3>✏️ تعديل الطالب</h3><div class="field"><label>الاسم</label><input id="mName" value="${esc(s.name)}"></div><div class="field"><label>الشخصية</label><select id="mAvatar">${emojis.map(x=>`<option ${x===s.avatar?'selected':''}>${x}</option>`).join('')}</select></div><button class="btn primary" onclick="saveStudent('${sid}')">حفظ</button> <button class="btn danger" onclick="deleteStudent('${sid}')">حذف الطالب</button>`)
+}
+function saveStudent(sid){let s=cls().students.find(x=>x.id===sid);s.name=document.getElementById('mName').value.trim()||s.name;s.avatar=document.getElementById('mAvatar').value;save();closeModal();renderStudents()}
+function deleteStudent(sid){if(confirm('حذف الطالب؟')){cls().students=cls().students.filter(x=>x.id!==sid);save();closeModal();renderStudents()}}
+function renderManage(){
+ let c=cls();
+ document.getElementById('app').innerHTML=`<div class="panel"><h3>📚 إدارة الفصول</h3><div class="toolbar"><button class="btn primary" onclick="openModal('class')">＋ فصل جديد</button>${state.classes.map(x=>`<button class="btn ${x.id===state.currentClass?'gold':''}" onclick="selectClass('${x.id}')">${esc(x.name)} (${x.students.length})</button>`).join('')}</div></div>
+ <div class="panel"><h3>👩‍🏫 ${esc(c.name)} — الطلاب</h3><div class="toolbar"><button class="btn primary" onclick="openModal('student')">＋ إضافة طالب</button><button class="btn" onclick="importExcel()">📥 استيراد Excel/CSV</button><button class="btn" onclick="exportStudents()">📤 تصدير Excel</button></div>
+ <div class="tableWrap"><table class="table"><thead><tr><th>الطالب</th><th>النجوم</th><th>المستوى</th><th>إجراءات</th></tr></thead><tbody>${c.students.map(s=>`<tr><td>${s.avatar} ${esc(s.name)}</td><td>⭐ ${s.stars||0}</td><td>${getLevel(s.stars||0)}</td><td><button class="btn" onclick="editStudent('${s.id}')">تعديل</button></td></tr>`).join('')||'<tr><td colspan="4" class="empty">لا يوجد طلاب</td></tr>'}</tbody></table></div></div>`
+}
+function selectClass(id){state.currentClass=id;save();syncControls();showScreen('manage')}
+function renderHonor(){
+ let ps=[...(cls()?.students||[])].sort((a,b)=>(b.stars||0)-(a.stars||0));
+ let top=ps.slice(0,3);
+ document.getElementById('app').innerHTML=`<div class="panel"><h3>🏆 لوحة شرف الأبطال</h3><p class="muted">الأبطال حسب مجموع النجوم في ${esc(cls().name)}</p><div class="rank">${[0,1,2].map(i=>top[i]?`<div class="rankCard"><div class="big">${['🥇','🥈','🥉'][i]}</div><div style="font-size:22px;font-weight:900">${esc(top[i].name)}</div><div>⭐ ${top[i].stars||0}</div><div>${getLevel(top[i].stars||0)}</div></div>`:`<div class="rankCard"><div class="big">${['🥇','🥈','🥉'][i]}</div><div class="muted">لم يُحدد بعد</div></div>`).join('')}</div></div>
+ <div class="panel"><h3>🌟 الترتيب الكامل</h3>${ps.map((s,i)=>`<div style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid #edf2f5"><span>${i+1}. ${s.avatar} <b>${esc(s.name)}</b></span><span>⭐ ${s.stars||0}</span></div>`).join('')}</div>`
+}
+function renderPrizes(){
+ document.getElementById('app').innerHTML=`<div class="panel"><div class="toolbar"><h3 style="margin:0">🎁 الجوائز</h3><button class="btn primary" onclick="openModal('prize')">＋ جائزة جديدة</button></div>${state.prizes.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:14px;border-bottom:1px solid #edf2f5"><span style="font-size:19px">${p.icon} <b>${esc(p.name)}</b></span><span>⭐ ${p.need}</span><button class="btn danger" onclick="deletePrize('${p.id}')">حذف</button></div>`).join('')}</div>`
+}
+function deletePrize(id){if(confirm('حذف الجائزة؟')){state.prizes=state.prizes.filter(p=>p.id!==id);save();renderPrizes()}}
+function renderReports(){
+ let c=cls(),ps=c.students,l=lesson();
+ let rows=ps.map(s=>{let good=0,bad=0;state.lessons.forEach(l=>{let t=s.evals?.[l.id]?.type;if(t==='good')good++;if(t==='bad')bad++});return {s,good,bad}}).sort((a,b)=>b.good-a.good);
+ document.getElementById('app').innerHTML=`<div class="panel noPrint"><div style="font-weight:900;margin-bottom:8px">🎯 تقييم الحصة الحالية: <span style="color:#0b9f9d">${esc(l?.name||"")}</span></div><div class="toolbar"><input id="reportSearch" placeholder="🔎 ابحثي عن طالب"><button class="btn primary" onclick="window.print()">🖨️ طباعة التقرير</button><button class="btn" onclick="exportStudents()">📊 Excel</button></div></div>
+ <div class="panel"><h2>📊 تقرير ${esc(c.name)}</h2><p class="muted">عدد الطلاب: ${ps.length} • الحصص: ${state.lessons.length} • التاريخ: ${today()}</p>
+ <div class="tableWrap"><table class="table"><thead><tr><th>الطالب</th><th>😊 إيجابي</th><th>😠 تنبيه</th><th>⭐ نجوم</th><th>المستوى</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.s.avatar} ${esc(r.s.name)}</td><td>${r.good}</td><td>${r.bad}</td><td>${r.s.stars||0}</td><td>${getLevel(r.s.stars||0)}</td></tr>`).join('')}</tbody></table></div></div>
+ <div class="panel"><h3>🔎 تفاصيل الحصص</h3><div class="tableWrap"><table class="table"><thead><tr><th>الطالب</th>${state.lessons.map(l=>`<th>${esc(l.name)}</th>`).join('')}</tr></thead><tbody>${ps.map(s=>`<tr><td>${esc(s.name)}</td>${state.lessons.map(l=>`<td>${s.evals?.[l.id]?.type==='good'?'😊':s.evals?.[l.id]?.type==='bad'?'😠':'—'}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>`
+}
+function renderBackup(){
+ document.getElementById('app').innerHTML=`<div class="panel"><h3>💾 نقل البيانات بين الأجهزة</h3><p>يمكنك تصدير ملف نسخة احتياطية ثم إرساله لنفسك عبر البريد أو حفظه في Google Drive، وبعدها استيراده في الجهاز الآخر.</p><div class="toolbar"><button class="btn primary" onclick="backupExport()">📤 تصدير نسخة كاملة</button><button class="btn" onclick="document.getElementById('backupInput').click()">📥 استيراد نسخة كاملة</button></div><div class="panel" style="background:#f7fcfe"><b>☁️ المزامنة السحابية التلقائية</b><p class="muted">بياناتك محفوظة ومتزامنة تلقائيًا عبر حسابك السحابي ☁️. سجّلي الدخول بالحساب نفسه للوصول إلى بياناتك من اللابتوب والجوال والأجهزة الأخرى.</p></div></div>`
+}
+function openModal(type){
+ if(type==='student')openModalHTML(`<h3>＋ إضافة طالب</h3><div class="field"><label>اسم الطالب</label><input id="mName" placeholder="اكتب الاسم"></div><div class="field"><label>الشخصية</label><select id="mAvatar">${emojis.map(x=>`<option>${x}</option>`).join('')}</select></div><button class="btn primary" onclick="addStudent()">إضافة</button>`)
+ if(type==='class')openModalHTML(`<h3>📚 إضافة فصل</h3><div class="field"><label>اسم الفصل</label><input id="mName" placeholder="مثال: الصف الثاني ب"></div><button class="btn primary" onclick="addClass()">إضافة</button>`)
+ if(type==='lesson')openModalHTML(`<h3>📖 إضافة حصة</h3><div class="field"><label>اسم الحصة</label><input id="mName" placeholder="الحصة 2"></div><div class="field"><label>التاريخ</label><input id="mDate" value="${today()}"></div><button class="btn primary" onclick="addLesson()">إضافة</button>`)
+ if(type==='prize')openModalHTML(`<h3>🎁 إضافة جائزة</h3><div class="field"><label>اسم الجائزة</label><input id="mName" placeholder="نجم الأسبوع"></div><div class="field"><label>النجوم المطلوبة</label><input id="mNeed" type="number" min="1" value="10"></div><div class="field"><label>الأيقونة</label><input id="mIcon" value="🏆"></div><button class="btn primary" onclick="addPrize()">إضافة</button>`)
+}
+function openModalHTML(x){document.getElementById('modalbox').innerHTML=x;document.getElementById('modal').classList.add('show')}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function addStudent(){let n=document.getElementById('mName').value.trim();if(!n)return toast('اكتبي اسم الطالب');if(cls().students.some(s=>s.name.trim()===n))return toast('هذا الاسم موجود بالفعل');cls().students.push({id:id(),name:n,avatar:document.getElementById('mAvatar').value,stars:0,evals:{},awards:[]});save();closeModal();renderStudents()}
+function addClass(){let n=document.getElementById('mName').value.trim();if(!n)return;let c={id:id(),name:n,students:[]};state.classes.push(c);state.currentClass=c.id;save();closeModal();syncControls();renderManage()}
+function addLesson(){let n=document.getElementById('mName').value.trim();if(!n)return;let l={id:id(),name:n,date:document.getElementById('mDate').value||today()};state.lessons.push(l);state.currentLesson=l.id;save();closeModal();syncControls();renderStudents()}
+function addPrize(){let n=document.getElementById('mName').value.trim();let need=Math.max(1,+document.getElementById('mNeed').value||1);let icon=document.getElementById('mIcon').value||'🏆';if(!n)return;state.prizes.push({id:id(),name:n,need,icon});save();closeModal();renderPrizes()}
+function importExcel(){
+ document.getElementById('fileInput').click();
+}
+document.getElementById('fileInput').addEventListener('change',async e=>{
+ let f=e.target.files[0];if(!f)return;
+ try{
+  let data=await f.arrayBuffer(), wb=window.XLSX?XLSX.read(data,{type:'array'}):null;
+  if(!wb)throw new Error('XLSX');
+  let rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:''});
+  let names=rows.flat().map(x=>String(x).trim()).filter(x=>x.length>1);
+  names=[...new Set(names)].filter(n=>!cls().students.some(s=>s.name.trim()===n));
+  openModalHTML(`<h3>📥 معاينة الاستيراد</h3><p>سيتم استيراد <b>${names.length}</b> اسمًا إلى <b>${esc(cls().name)}</b>.</p><div style="max-height:300px;overflow:auto;background:#f7fbfd;padding:10px;border-radius:12px">${names.map(n=>`<div>• ${esc(n)}</div>`).join('')}</div><br><button class="btn primary" onclick='confirmImport(${JSON.stringify(names)})'>استيراد الأسماء</button>`);
+ }catch(err){toast('تعذر قراءة الملف. جرّبي XLSX أو CSV.')}
+ e.target.value='';
+});
+function confirmImport(names){names.forEach(n=>cls().students.push({id:id(),name:n,avatar:emojis[Math.floor(Math.random()*emojis.length)],stars:0,evals:{},awards:[]}));save();closeModal();renderManage();toast(`تم استيراد ${names.length} طالبًا`)}
+function exportStudents(){
+ let c=cls(), data=c.students.map(s=>({الاسم:s.name,النجوم:s.stars||0,المستوى:getLevel(s.stars||0),...Object.fromEntries(state.lessons.map(l=>[l.name,s.evals?.[l.id]?.type==='good'?'إيجابي':s.evals?.[l.id]?.type==='bad'?'تنبيه':'']))}));
+ if(window.XLSX){let ws=XLSX.utils.json_to_sheet(data),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'الطلاب');XLSX.writeFile(wb,`أبطال_السلوك_${c.name}.xlsx`)}else download('students.csv',data.map(x=>Object.values(x).join(',')).join('\\n'),'text/csv')
+}
+function backupExport(){let blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='نسخة_احتياطية_أبطال_السلوك.json';a.click();URL.revokeObjectURL(a.href)}
+document.getElementById('backupInput').addEventListener('change',async e=>{let f=e.target.files[0];if(!f)return;try{let x=JSON.parse(await f.text());if(!x.classes||!x.lessons)throw 0;if(confirm('استبدال البيانات الحالية بالنسخة الاحتياطية؟')){state=x;save();syncControls();showScreen('students');toast('تم استيراد النسخة الاحتياطية')}}catch{toast('ملف النسخة الاحتياطية غير صالح')}e.target.value=''})
+function download(name,text,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click()}
+let audioCtx;
+function beep(kind){
+ if(!state.sound)return;
+ try{audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();let o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);let f=kind==='good'?660:kind==='bad'?280:kind==='star'?880:990;o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.08,audioCtx.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+.22);o.start();o.stop(audioCtx.currentTime+.24)}catch{}
+}
+function toggleSound(){state.sound=!state.sound;save();toast(state.sound?'🔊 تم تشغيل الأصوات':'🔇 تم كتم الأصوات')}
+function confetti(...items){let c=document.getElementById('celebrate');c.innerHTML='';c.classList.add('show');for(let i=0;i<28;i++){let s=document.createElement('span');s.className='conf';s.textContent=items[i%items.length];s.style.left=Math.random()*100+'%';s.style.animationDelay=(Math.random()*.5)+'s';c.appendChild(s)}setTimeout(()=>c.classList.remove('show'),1800)}
+window.addEventListener('beforeunload',save);
+initCloud();
+</script>
+</body>
+</html>
